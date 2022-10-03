@@ -1,0 +1,1 @@
+# study.teor_pl
