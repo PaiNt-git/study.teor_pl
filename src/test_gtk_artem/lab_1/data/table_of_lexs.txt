@@ -1,0 +1,126 @@
+{
+    "const_tables_of_lex": {
+        "functional_words": [
+            "char",
+            "double",
+            "float",
+            "int",
+            "string",
+            "const",
+            "long",
+            "short",
+            "signed",
+            "unsigned",
+            "void",
+            "auto",
+            "if",
+            "else",
+            "case",
+            "switch",
+            "for",
+            "while",
+            "do",
+            "break",
+            "continue",
+            "return",
+            "goto",
+            "using",
+            "namespace"
+        ],
+        "operations": [
+            "+",
+            "++",
+            "-",
+            "--",
+            "*",
+            "**",
+            "^",
+            "/",
+            "%",
+            "==",
+            "!=",
+            "<",
+            ">",
+            "<=",
+            ">=",
+            "&",
+            "&&",
+            "||",
+            "!",
+            "<<",
+            ">>",
+            ":",
+            "="
+        ],
+        "separators": [
+            "(",
+            ")",
+            ";",
+            "[",
+            "]",
+            "{",
+            "}",
+            ","
+        ],
+        "only_one_litters_operations": [
+            "^",
+            "/",
+            ":",
+            "%"
+        ],
+        "two_litters_operations": [
+            "++",
+            "--",
+            "**",
+            "==",
+            "!=",
+            "<=",
+            ">=",
+            "&&",
+            "||",
+            "<<",
+            ">>"
+        ],
+        "start_two_litters_operations": [
+            "+",
+            "-",
+            "*",
+            "=",
+            "!",
+            "<",
+            ">",
+            "&",
+            "|",
+            "<",
+            ">"
+        ]
+    },
+    "mutable_tables_of_lex": {
+        "identifiers": [
+            "std",
+            "main",
+            "name",
+            "age",
+            "anniversary",
+            "printf",
+            "cin",
+            "cout",
+            "wait_years",
+            "abs",
+            "i"
+        ],
+        "character_constants": [
+            "Введите ваш возраст и имя:\n",
+            " поздравляем с юбилеем!\n",
+            " придется подождать! До юбилея осталось ",
+            "*",
+            " года\n"
+        ],
+        "numeric_constants": [
+            "5",
+            "0",
+            "1",
+            "0"
+        ]
+    }
+}

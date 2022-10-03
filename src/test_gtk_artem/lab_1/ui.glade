@@ -1,0 +1,827 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.40.0 
+
+Copyright (C) https://github.com/adminka-root
+
+This file is part of Theory and practice of PL [4 labs].
+
+Theory and practice of PL [4 labs] is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Theory and practice of PL [4 labs] is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Theory and practice of PL [4 labs].  If not, see <http://www.gnu.org/licenses/>.
+
+Author: adminka-root
+
+-->
+<interface>
+  <requires lib="gtk+" version="3.20"/>
+  <!-- interface-license-type gplv3 -->
+  <!-- interface-name Theory and practice of PL [4 labs] -->
+  <!-- interface-description It curriculum was made within the framework of the practice of the discipline \"theory and practice of PL\" (Pacific State University). -->
+  <!-- interface-copyright https://github.com/adminka-root -->
+  <!-- interface-authors adminka-root -->
+  <object class="GtkListStore" id="GLS_list_for_table_of_lex">
+    <columns>
+      <!-- column-name num -->
+      <column type="gchararray"/>
+      <!-- column-name lex -->
+      <column type="gchararray"/>
+      <!-- column-name lex_internal_code -->
+      <column type="gchararray"/>
+      <!-- column-name class_lex -->
+      <column type="gchararray"/>
+    </columns>
+    <data>
+      <row>
+        <col id="0" translatable="yes">0</col>
+        <col id="1" translatable="yes">4</col>
+        <col id="2" translatable="yes">sfas</col>
+        <col id="3" translatable="yes">sdsgs</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">1</col>
+        <col id="1" translatable="yes">5</col>
+        <col id="2" translatable="yes">ssss</col>
+        <col id="3" translatable="yes">zzzz</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">2</col>
+        <col id="1" translatable="yes">6</col>
+        <col id="2" translatable="yes">eee</col>
+        <col id="3" translatable="yes">kkk</col>
+      </row>
+    </data>
+  </object>
+  <object class="GtkTextBuffer" id="GTB_content_of_lex_file"/>
+  <object class="GtkTextBuffer" id="GTB_content_of_out_codes_file"/>
+  <object class="GtkTextBuffer" id="GTB_errors_of_syntactical_analysis"/>
+  <object class="GtkTextBuffer" id="GTB_machine_result"/>
+  <object class="GtkTextBuffer" id="GTB_polish_result"/>
+  <object class="GtkImage" id="image1">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">gtk-save</property>
+  </object>
+  <object class="GtkWindow" id="Main_Window">
+    <property name="can-focus">False</property>
+    <property name="title" translatable="yes">Теория и практика ЯП</property>
+    <property name="window-position">center</property>
+    <property name="default-width">1200</property>
+    <property name="default-height">500</property>
+    <property name="icon-name">applications-development</property>
+    <signal name="destroy" handler="on_destroy_window" swapped="no"/>
+    <child>
+      <object class="GtkBox" id="GBox_root">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="GtkMenuBar" id="GMenuBar">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <child>
+              <object class="GtkMenuItem" id="GMenuItem_file">
+                <property name="name">GMI_file</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">_Файл</property>
+                <property name="use-underline">True</property>
+                <child type="submenu">
+                  <object class="GtkMenu" id="GMenu_save_paths">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="tooltip-text" translatable="yes">Сохранить указанные пути для автоматической загрузки при следующем запуске</property>
+                    <child>
+                      <object class="GtkImageMenuItem">
+                        <property name="label" translatable="yes">Сохранить пути</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="image">image1</property>
+                        <property name="use-stock">False</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkMenuItem" id="GMenuItem_about">
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">_Справка</property>
+                <property name="use-underline">True</property>
+                <child type="submenu">
+                  <object class="GtkMenu" id="GMenu_about">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <child>
+                      <object class="GtkImageMenuItem">
+                        <property name="label">gtk-about</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="use-underline">True</property>
+                        <property name="use-stock">True</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <!-- n-columns=1 n-rows=1 -->
+          <object class="GtkGrid" id="GG_main">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="margin-start">5</property>
+            <property name="margin-end">5</property>
+            <child>
+              <object class="GtkBox" id="GBox_main">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="spacing">8</property>
+                <child>
+                  <object class="GtkFrame" id="GFrame_lab_1">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label-xalign">0</property>
+                    <property name="shadow-type">in</property>
+                    <child>
+                      <object class="GtkAlignment">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="left-padding">12</property>
+                        <child>
+                          <object class="GtkBox">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="orientation">vertical</property>
+                            <property name="spacing">10</property>
+                            <child>
+                              <object class="GtkBox">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="orientation">vertical</property>
+                                <child>
+                                  <object class="GtkLabel" id="GLabel_file_for_lex_analysis">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="label" translatable="yes">Файл для лексического анализа</property>
+                                    <attributes>
+                                      <attribute name="weight" value="bold"/>
+                                    </attributes>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkBox" id="GBox_lab_1_buttons_1">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="homogeneous">True</property>
+                                    <child>
+                                      <object class="GtkFileChooserButton" id="GFCB_lex_select_file">
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">False</property>
+                                        <property name="tooltip-text" translatable="yes">Выберите файл исходного кода для проведения анализа</property>
+                                        <property name="title" translatable="yes"/>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
+                                        <property name="position">0</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="GtkButton" id="GButton_lex_read_file">
+                                        <property name="label" translatable="yes">Прочитать</property>
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">True</property>
+                                        <property name="receives-default">True</property>
+                                        <property name="tooltip-text" translatable="yes">Прочтите указанный файл</property>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
+                                        <property name="position">1</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="GtkButton" id="GButton_lex_analysis">
+                                        <property name="label" translatable="yes">Анализ</property>
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">True</property>
+                                        <property name="receives-default">True</property>
+                                        <property name="tooltip-text" translatable="yes">Запустите лексический анализ</property>
+                                        <signal name="clicked" handler="load_code" object="GTB_content_of_lex_file" swapped="no"/>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
+                                        <property name="position">2</property>
+                                      </packing>
+                                    </child>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">1</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkScrolledWindow">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">True</property>
+                                    <property name="shadow-type">in</property>
+                                    <child>
+                                      <object class="GtkTextView" id="GTextV_content_of_lex_file">
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">True</property>
+                                        <property name="tooltip-text" translatable="yes">Код для анализа. Введите код здесь, если не хотите использовать чтение из файла.</property>
+                                        <property name="hexpand">True</property>
+                                        <property name="vexpand">True</property>
+                                        <property name="buffer">GTB_content_of_lex_file</property>
+                                      </object>
+                                    </child>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">2</property>
+                                  </packing>
+                                </child>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkBox">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="orientation">vertical</property>
+                                <child>
+                                  <object class="GtkLabel" id="GLabel_table_of_lex">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="label" translatable="yes">Таблица лексем</property>
+                                    <attributes>
+                                      <attribute name="weight" value="bold"/>
+                                    </attributes>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkBox" id="GBox_lab_1_buttons_2">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="homogeneous">True</property>
+                                    <child>
+                                      <object class="GtkFileChooserButton" id="GFCB_out_lex_select_file_1">
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">False</property>
+                                        <property name="tooltip-text" translatable="yes">Выберите файл для сохранения последовательности всех лексем</property>
+                                        <property name="title" translatable="yes"/>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
+                                        <property name="position">0</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="GtkFileChooserButton" id="GFCB_table_of_lex_select_file">
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">False</property>
+                                        <property name="tooltip-text" translatable="yes">Выберите файл для сохранения таблицы всех лексем</property>
+                                        <property name="title" translatable="yes"/>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
+                                        <property name="position">1</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="GtkButton" id="GButton_table_of_lex_save_in_file">
+                                        <property name="label" translatable="yes">Сохранить</property>
+                                        <property name="width-request">90</property>
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">True</property>
+                                        <property name="receives-default">True</property>
+                                        <property name="tooltip-text" translatable="yes">Сохранить полученную последовательность лексем и таблицы всех лексем</property>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
+                                        <property name="position">2</property>
+                                      </packing>
+                                    </child>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">1</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkScrolledWindow">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">True</property>
+                                    <property name="shadow-type">in</property>
+                                    <child>
+                                      <object class="GtkTreeView" id="GTreeV_table_of_lex">
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">True</property>
+                                        <property name="tooltip-text" translatable="yes">Результирующая таблица работы лексического анализатора</property>
+                                        <property name="hexpand">True</property>
+                                        <property name="vexpand">True</property>
+                                        <property name="model">GLS_list_for_table_of_lex</property>
+                                        <property name="search-column">0</property>
+                                        <property name="enable-grid-lines">both</property>
+                                        <child internal-child="selection">
+                                          <object class="GtkTreeSelection"/>
+                                        </child>
+                                        <child>
+                                          <object class="GtkTreeViewColumn" id="Column_1">
+                                            <property name="title" translatable="yes">№</property>
+                                            <child>
+                                              <object class="GtkCellRendererText" id="num"/>
+                                              <attributes>
+                                                <attribute name="text">0</attribute>
+                                              </attributes>
+                                            </child>
+                                          </object>
+                                        </child>
+                                        <child>
+                                          <object class="GtkTreeViewColumn" id="Column_2">
+                                            <property name="resizable">True</property>
+                                            <property name="title" translatable="yes">Лексема</property>
+                                            <property name="expand">True</property>
+                                            <child>
+                                              <object class="GtkCellRendererText" id="lex"/>
+                                              <attributes>
+                                                <attribute name="text">1</attribute>
+                                              </attributes>
+                                            </child>
+                                          </object>
+                                        </child>
+                                        <child>
+                                          <object class="GtkTreeViewColumn" id="Column_3">
+                                            <property name="resizable">True</property>
+                                            <property name="title" translatable="yes">Код лексемы</property>
+                                            <property name="expand">True</property>
+                                            <child>
+                                              <object class="GtkCellRendererText" id="lex_internal_code"/>
+                                              <attributes>
+                                                <attribute name="text">2</attribute>
+                                              </attributes>
+                                            </child>
+                                          </object>
+                                        </child>
+                                        <child>
+                                          <object class="GtkTreeViewColumn" id="Column_4">
+                                            <property name="resizable">True</property>
+                                            <property name="title" translatable="yes">Класс лексемы</property>
+                                            <property name="expand">True</property>
+                                            <child>
+                                              <object class="GtkCellRendererText" id="class_lex"/>
+                                              <attributes>
+                                                <attribute name="text">3</attribute>
+                                              </attributes>
+                                            </child>
+                                          </object>
+                                        </child>
+                                      </object>
+                                    </child>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">2</property>
+                                  </packing>
+                                </child>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child type="label">
+                      <object class="GtkLabel" id="GLabel_lab_1">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">1 лаба</property>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkBox" id="GBox_lab_2-3-4">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="orientation">vertical</property>
+                    <child>
+                      <object class="GtkFrame" id="GFrame_lab_2-3">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label-xalign">0</property>
+                        <property name="shadow-type">in</property>
+                        <child>
+                          <object class="GtkAlignment">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="left-padding">12</property>
+                            <child>
+                              <object class="GtkBox">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="orientation">vertical</property>
+                                <child>
+                                  <object class="GtkBox" id="GBox_lab_2-3_out_codes">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="orientation">vertical</property>
+                                    <child>
+                                      <object class="GtkLabel" id="GLabel_lex_analyzer_out_codes">
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">False</property>
+                                        <property name="label" translatable="yes">Выходные коды лексического анализатора</property>
+                                        <attributes>
+                                          <attribute name="weight" value="bold"/>
+                                        </attributes>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
+                                        <property name="position">0</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="GtkBox" id="GBox_lab_2-3_buttons">
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">False</property>
+                                        <property name="homogeneous">True</property>
+                                        <child>
+                                          <object class="GtkFileChooserButton" id="GFCB_out_lex_select_file_2">
+                                            <property name="visible">True</property>
+                                            <property name="can-focus">False</property>
+                                            <property name="tooltip-text" translatable="yes">Выберите файл - результат работы лексического анализа</property>
+                                            <property name="title" translatable="yes"/>
+                                          </object>
+                                          <packing>
+                                            <property name="expand">False</property>
+                                            <property name="fill">True</property>
+                                            <property name="position">0</property>
+                                          </packing>
+                                        </child>
+                                        <child>
+                                          <object class="GtkButton" id="GButton_out_lex_read_file">
+                                            <property name="label" translatable="yes">Прочитать</property>
+                                            <property name="visible">True</property>
+                                            <property name="can-focus">True</property>
+                                            <property name="receives-default">True</property>
+                                            <property name="tooltip-text" translatable="yes">Прочтите указанный файл</property>
+                                          </object>
+                                          <packing>
+                                            <property name="expand">False</property>
+                                            <property name="fill">True</property>
+                                            <property name="position">1</property>
+                                          </packing>
+                                        </child>
+                                        <child>
+                                          <object class="GtkButton" id="GButton_out_lex_analysis">
+                                            <property name="label" translatable="yes">Анализ</property>
+                                            <property name="visible">True</property>
+                                            <property name="can-focus">True</property>
+                                            <property name="receives-default">True</property>
+                                            <property name="tooltip-text" translatable="yes">Запустите получение обратной польской записи и машинных кодов</property>
+                                          </object>
+                                          <packing>
+                                            <property name="expand">False</property>
+                                            <property name="fill">True</property>
+                                            <property name="position">2</property>
+                                          </packing>
+                                        </child>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
+                                        <property name="position">1</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="GtkScrolledWindow">
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">True</property>
+                                        <property name="shadow-type">in</property>
+                                        <child>
+                                          <object class="GtkTextView" id="GTextV_content_of_out_codes_file">
+                                            <property name="visible">True</property>
+                                            <property name="can-focus">True</property>
+                                            <property name="tooltip-text" translatable="yes">Код на выходе из синтаксического анализатора (последовательность всех лексем)</property>
+                                            <property name="hexpand">True</property>
+                                            <property name="vexpand">True</property>
+                                            <property name="buffer">GTB_content_of_out_codes_file</property>
+                                          </object>
+                                        </child>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
+                                        <property name="position">2</property>
+                                      </packing>
+                                    </child>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkBox" id="GBox_lab_2-3_result">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <child>
+                                      <object class="GtkBox" id="GBox_lab_2-3_polish_entry">
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">False</property>
+                                        <property name="orientation">vertical</property>
+                                        <child>
+                                          <object class="GtkLabel" id="GLabel_polish_entry">
+                                            <property name="visible">True</property>
+                                            <property name="can-focus">False</property>
+                                            <property name="label" translatable="yes">Обратная польская запись</property>
+                                            <attributes>
+                                              <attribute name="weight" value="bold"/>
+                                            </attributes>
+                                          </object>
+                                          <packing>
+                                            <property name="expand">False</property>
+                                            <property name="fill">True</property>
+                                            <property name="position">0</property>
+                                          </packing>
+                                        </child>
+                                        <child>
+                                          <object class="GtkScrolledWindow">
+                                            <property name="visible">True</property>
+                                            <property name="can-focus">True</property>
+                                            <property name="shadow-type">in</property>
+                                            <child>
+                                              <object class="GtkTextView" id="GTextV_polish_result">
+                                                <property name="visible">True</property>
+                                                <property name="can-focus">True</property>
+                                                <property name="tooltip-text" translatable="yes">Полученный код обратной польской записи</property>
+                                                <property name="hexpand">True</property>
+                                                <property name="vexpand">True</property>
+                                                <property name="buffer">GTB_polish_result</property>
+                                              </object>
+                                            </child>
+                                          </object>
+                                          <packing>
+                                            <property name="expand">False</property>
+                                            <property name="fill">True</property>
+                                            <property name="position">1</property>
+                                          </packing>
+                                        </child>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
+                                        <property name="position">0</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="GtkBox" id="GBox_lab_2-3_machine_code">
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">False</property>
+                                        <property name="orientation">vertical</property>
+                                        <child>
+                                          <object class="GtkLabel" id="GLabel_machine_code">
+                                            <property name="visible">True</property>
+                                            <property name="can-focus">False</property>
+                                            <property name="label" translatable="yes">Машинный код</property>
+                                            <attributes>
+                                              <attribute name="weight" value="bold"/>
+                                            </attributes>
+                                          </object>
+                                          <packing>
+                                            <property name="expand">False</property>
+                                            <property name="fill">True</property>
+                                            <property name="position">0</property>
+                                          </packing>
+                                        </child>
+                                        <child>
+                                          <object class="GtkScrolledWindow">
+                                            <property name="visible">True</property>
+                                            <property name="can-focus">True</property>
+                                            <property name="shadow-type">in</property>
+                                            <child>
+                                              <object class="GtkTextView" id="GTextV_machine_result">
+                                                <property name="visible">True</property>
+                                                <property name="can-focus">True</property>
+                                                <property name="tooltip-text" translatable="yes">Полученный машинный код</property>
+                                                <property name="hexpand">True</property>
+                                                <property name="vexpand">True</property>
+                                                <property name="buffer">GTB_machine_result</property>
+                                              </object>
+                                            </child>
+                                          </object>
+                                          <packing>
+                                            <property name="expand">False</property>
+                                            <property name="fill">True</property>
+                                            <property name="position">1</property>
+                                          </packing>
+                                        </child>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
+                                        <property name="position">1</property>
+                                      </packing>
+                                    </child>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">1</property>
+                                  </packing>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                        <child type="label">
+                          <object class="GtkLabel" id="GLabel_lab_2-3">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="label" translatable="yes">2 и 3 лабы</property>
+                          </object>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkFrame" id="GFrame_lab_4">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label-xalign">0</property>
+                        <property name="shadow-type">in</property>
+                        <child>
+                          <object class="GtkAlignment">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="left-padding">12</property>
+                            <child>
+                              <object class="GtkBox" id="GBox_lab_4">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="orientation">vertical</property>
+                                <child>
+                                  <object class="GtkLabel" id="GLabel_parser_errors">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="label" translatable="yes">Ошибки синтаксического анализатора</property>
+                                    <attributes>
+                                      <attribute name="weight" value="bold"/>
+                                    </attributes>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkButton" id="GButton_syntactical_analysis">
+                                    <property name="label" translatable="yes">Анализ</property>
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">True</property>
+                                    <property name="receives-default">True</property>
+                                    <property name="tooltip-text" translatable="yes">Запустить синтаксический анализ. 
+Примечание: перед запуском сначала укажите и "прочитайте" файл  (результат работы лексического анализа) из блока "2 и 3 лабы"</property>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">1</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkScrolledWindow">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">True</property>
+                                    <property name="shadow-type">in</property>
+                                    <child>
+                                      <object class="GtkTextView" id="GTextV_errors_of_syntactical_analysis">
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">True</property>
+                                        <property name="tooltip-text" translatable="yes">Поле для вывода ошибок синтаксического анализатора</property>
+                                        <property name="hexpand">True</property>
+                                        <property name="vexpand">True</property>
+                                        <property name="buffer">GTB_errors_of_syntactical_analysis</property>
+                                      </object>
+                                    </child>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">2</property>
+                                  </packing>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                        <child type="label">
+                          <object class="GtkLabel" id="GLabel_lab_4">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="label" translatable="yes">4 лаба</property>
+                          </object>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">0</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkStatusbar" id="GStatusBar">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="margin-start">10</property>
+            <property name="margin-end">10</property>
+            <property name="margin-top">6</property>
+            <property name="margin-bottom">6</property>
+            <property name="orientation">vertical</property>
+            <property name="spacing">2</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>
