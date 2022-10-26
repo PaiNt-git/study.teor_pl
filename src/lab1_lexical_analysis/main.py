@@ -156,7 +156,7 @@ class LexicalAnalyzerC:
         self._current_сharn = 0
         self._current_char = ''
 
-        self.buffer = CharStack()
+        self._buffer = CharStack()
         self.__ALL_registry = []
 
         self._analysed_lines = CharQueue()
@@ -193,14 +193,14 @@ class LexicalAnalyzerC:
     def add_buff(self, state=None, item=None, preclean=False):
         if not item:
             item = self._current_char
-        if self.buffer.is_empty and item in self.EXCEPT_CHARS:
+        if self._buffer.is_empty and item in self.EXCEPT_CHARS:
             return
         if preclean:
             self.clear_buff(state)
         if state:
             self.current_state = state
         if item:
-            self.buffer.add(item)
+            self._buffer.add(item)
 
     def clear_buff(self, state=None):
         if state:
@@ -209,25 +209,23 @@ class LexicalAnalyzerC:
         self._start_linen = self._current_linen
         self._start_сharn = self._current_сharn
 
-        self.buffer.clear()
+        self._buffer.clear()
 
-    def read_buff(self, top=False, bottom=False):
+    def read_buff(self, top=False):
         if top:
-            return self.buffer.top()
-        if bottom:
-            return self.buffer.bottom()
-        return self.buffer.read()
+            return self._buffer.top()
+        return self._buffer.read()
 
     @property
     def is_buff_empty(self):
-        return self.buffer.is_empty
+        return self._buffer.is_empty
 
     @property
     def ALL_registry(self):
         return self.__ALL_registry
 
     @ALL_registry.setter
-    def _ALL_registry(self, value):
+    def ALL_registry(self, value):
         self.__ALL_registry = value
 
     W_registry = property(lambda s: [x for x in s.ALL_registry if x.class_code == 'W'])
@@ -635,10 +633,10 @@ class LexicalAnalyzerC:
 
 if __name__ == "__main__":
 
-    anal = LexicalAnalyzerC(r'input_code.c')
+    anali = LexicalAnalyzerC(r'input_code.c')
 
-    anal.run_analysis()
+    anali.run_analysis()
 
-    print(anal)
+    print(anali)
 
     pass
