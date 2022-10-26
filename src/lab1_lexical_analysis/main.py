@@ -5,6 +5,7 @@ Created on 15 сент. 2022 г.
 '''
 
 from shared_classes import CharStack, CharQueue
+import time
 
 
 class Lexem:
@@ -106,6 +107,7 @@ class LexicalAnalyzerC:
         '{': 5,
         '}': 6,
         ',': 7,
+        '.': 8,
 
     }
 
@@ -362,6 +364,9 @@ class LexicalAnalyzerC:
 
     def __str__(self):
 
+        if self.current_state == 'Z':
+            return '\n'.join(self.get_table_rows_cols()) + f'\n\n{self.current_state_verbose}'
+
         if not self.current_state == 'F':
             return '\n'.join(self.get_table_rows_cols())
 
@@ -371,6 +376,7 @@ class LexicalAnalyzerC:
         """
         Начать анализ. Заполнить таблицы лексем.
         """
+        self._time_start = time.time()
 
         # Цикл парсинга строк программы
         while not self._analysed_lines.is_empty or not self._current_line.is_empty:
@@ -504,6 +510,10 @@ class LexicalAnalyzerC:
                     elif self.current_char == '_':
                         self.clear_buff('IDENT')
                         self.add_buff()
+                        continue
+
+                    elif ord(self.current_char) == 65279:  # BOM (Byte Order Mark) ? 'ZERO WIDTH NO-BREAK SPACE'
+                        self.clear_buff()
                         continue
 
                     else:
@@ -686,12 +696,16 @@ class LexicalAnalyzerC:
 
                 full_loop_iter = True
 
+        else:
+            self._time_end = time.time()
+            self.current_state = ('Z', f'Лексический анализ завершен без ошибок. Время выполнения: {self._time_end - self._time_start} с.')
+
         pass
 
 
 if __name__ == "__main__":
 
-    anali = LexicalAnalyzerC(r'input_code.c')
+    anali = LexicalAnalyzerC(r'input_code.cpp')
 
     anali.run_analysis()
 
