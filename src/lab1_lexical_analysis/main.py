@@ -141,6 +141,30 @@ class LexicalAnalyzerC:
 
     IMPLICIT_SEPARATORS = list(set(list(TABLE_SEPARATORS.keys()) + list(map(lambda x: x[0], TABLE_OPERATIONS.keys())) + list(EXCEPT_CHARS)))
 
+    @property
+    def TABLE_IDENTIFICATORS(self):
+        return self._TABLE_IDENTIFICATORS
+
+    @TABLE_IDENTIFICATORS.setter
+    def TABLE_IDENTIFICATORS(self, value):
+        self._TABLE_IDENTIFICATORS = value
+
+    @property
+    def TABLE_CHAR_CONSTANTS(self):
+        return self._TABLE_CHAR_CONSTANTS
+
+    @TABLE_CHAR_CONSTANTS.setter
+    def TABLE_CHAR_CONSTANTS(self, value):
+        self._TABLE_CHAR_CONSTANTS = value
+
+    @property
+    def TABLE_NUM_CONSTANTS(self):
+        return self._TABLE_IDENTIFICATORS
+
+    @TABLE_NUM_CONSTANTS.setter
+    def TABLE_NUM_CONSTANTS(self, value):
+        self._TABLE_NUM_CONSTANTS = value
+
     def __init__(self, program_filename: str):
         self.program_filename = program_filename
         self._current_state = 'S'
@@ -163,6 +187,10 @@ class LexicalAnalyzerC:
         with open(self.program_filename, 'rt', encoding='utf-8') as f:
             for line in f:
                 self._analysed_lines.add(line)
+
+        self.TABLE_IDENTIFICATORS = {}
+        self.TABLE_CHAR_CONSTANTS = {}
+        self.TABLE_NUM_CONSTANTS = {}
 
     @property
     def current_state(self):
@@ -264,6 +292,30 @@ class LexicalAnalyzerC:
 
             elif lexem.class_code == "R":
                 lex_id = self.TABLE_SEPARATORS.get(lexem.text, 0)
+
+            if lexem.class_code == "I":
+                clen = len(self.TABLE_IDENTIFICATORS)
+                lexem.text = lexem.text.strip()
+                lex_id = self.TABLE_IDENTIFICATORS.get(lexem.text, 0)
+                if lex_id == 0:
+                    lex_id = clen
+                    self.TABLE_IDENTIFICATORS[lexem.text] = lex_id
+
+            elif lexem.class_code == "C":
+                clen = len(self.TABLE_CHAR_CONSTANTS)
+                lexem.text = lexem.text.strip()
+                lex_id = self.TABLE_CHAR_CONSTANTS.get(lexem.text, 0)
+                if lex_id == 0:
+                    lex_id = clen
+                    self.TABLE_CHAR_CONSTANTS[lexem.text] = lex_id
+
+            elif lexem.class_code == "N":
+                clen = len(self.TABLE_NUM_CONSTANTS)
+                lexem.text = lexem.text.strip()
+                lex_id = self.TABLE_NUM_CONSTANTS.get(lexem.text, 0)
+                if lex_id == 0:
+                    lex_id = clen
+                    self.TABLE_NUM_CONSTANTS[lexem.text] = lex_id
 
             lexem.lex_id = lex_id
 
