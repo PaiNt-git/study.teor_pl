@@ -24,5 +24,5 @@ int main()
 
   cout.precision(16); // 16 значащих знаков.
   cout << "log(b, a)  = " << log(b, a) << endl;
-  return EXIT_SUCCESS;
+	return EXIT_SUCCESS;
 }
