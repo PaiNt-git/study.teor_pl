@@ -14,6 +14,8 @@ int main()
     string name;
     int age;
 
+    //gf er
+
     const float anniversary = 567.1;
 
     printf("Введите ваш возраст и имя:\n");

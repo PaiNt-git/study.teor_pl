@@ -367,11 +367,11 @@ class LexicalAnalyzerC:
                 #-----------------------------------------
                 #-----------------------------------------
 
-                #print(self.read_buff())
-                #print("=======")
+                # print(self.read_buff())
+                # print("=======")
 
                 # Не анализируем символы
-                if self.current_char in self.EXCEPT_CHARS and self.current_state not in ('LETT', 'IDENT', 'INT', 'REAL', 'MCOP'):
+                if self.current_char in self.EXCEPT_CHARS and self.current_state not in ('LETT', 'IDENT', 'INT', 'REAL', 'MCOP', ):
                     continue
 
                 # Состояние когда окончены предыдущие парсинги лексем
@@ -401,6 +401,7 @@ class LexicalAnalyzerC:
 
                         elif next_chars[-1] == '/':  # Однострочный комментарий
                             self.add_buff('OLC', next_chars[-1])
+                            full_loop_iter = True
                             continue
 
                         else:  # Операция деления
@@ -474,10 +475,15 @@ class LexicalAnalyzerC:
 
                     if self.current_state == 'OLC':
 
-                        if not self.current_char:  # строчный комментарий
+                        next_chars.append(self._current_line.pop())
+
+                        if not next_chars[-1] or next_chars[-1] == '\n':  # строчный комментарий
                             self.add_lexem(Lexem('?', text=self.read_buff()))
                             self.clear_buff('S')
                             continue
+
+                        ret_or_add_chars_to_buff = True
+                        continue
 
                     elif self.current_state == 'LETT' or self.current_state == 'IDENT':
 
