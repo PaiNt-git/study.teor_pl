@@ -300,7 +300,7 @@ class LexicalAnalyzerC:
                 lexem.text = lexem.text.strip()
                 lex_id = self.TABLE_IDENTIFICATORS.get(lexem.text, 0)
                 if lex_id == 0:
-                    lex_id = clen
+                    lex_id = clen + 1
                     self.TABLE_IDENTIFICATORS[lexem.text] = lex_id
 
             elif lexem.class_code == "C":
@@ -308,7 +308,7 @@ class LexicalAnalyzerC:
                 lexem.text = lexem.text.strip()
                 lex_id = self.TABLE_CHAR_CONSTANTS.get(lexem.text, 0)
                 if lex_id == 0:
-                    lex_id = clen
+                    lex_id = clen + 1
                     self.TABLE_CHAR_CONSTANTS[lexem.text] = lex_id
 
             elif lexem.class_code == "N":
@@ -316,7 +316,7 @@ class LexicalAnalyzerC:
                 lexem.text = lexem.text.strip()
                 lex_id = self.TABLE_NUM_CONSTANTS.get(lexem.text, 0)
                 if lex_id == 0:
-                    lex_id = clen
+                    lex_id = clen + 1
                     self.TABLE_NUM_CONSTANTS[lexem.text] = lex_id
 
             lexem.lex_id = lex_id
