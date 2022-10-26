@@ -161,7 +161,7 @@ class LexicalAnalyzerC:
 
     @property
     def TABLE_NUM_CONSTANTS(self):
-        return self._TABLE_IDENTIFICATORS
+        return self._TABLE_NUM_CONSTANTS
 
     @TABLE_NUM_CONSTANTS.setter
     def TABLE_NUM_CONSTANTS(self, value):
@@ -295,7 +295,7 @@ class LexicalAnalyzerC:
             elif lexem.class_code == "R":
                 lex_id = self.TABLE_SEPARATORS.get(lexem.text, 0)
 
-            if lexem.class_code == "I":
+            elif lexem.class_code == "I":
                 clen = len(self.TABLE_IDENTIFICATORS)
                 lexem.text = lexem.text.strip()
                 lex_id = self.TABLE_IDENTIFICATORS.get(lexem.text, 0)
