@@ -15,9 +15,11 @@ class Lexem:
         'R': 'Разделители',
         'N': 'Константы числовые',
         'C': 'Константы символьные',
+
+        '?': 'Другие лексемы',
     }
 
-    def __init__(self, class_code: str, lex_id: int, text: str='', order: int=-1):
+    def __init__(self, class_code: str, lex_id: int=-1, text: str='', order: int=-1, linen: int=0, charn: int=0, slinen: int=0, scharn: int=0):
         if class_code not in Lexem.LEXEM_CLASSES.keys():
             raise ValueError('Неподходящий код класса лексемы')
 
@@ -25,6 +27,10 @@ class Lexem:
         self.lex_id = lex_id
         self.text = text
         self.order = order
+        self.linen = linen
+        self.charn = charn
+        self.slinen = slinen
+        self.scharn = scharn
 
     @property
     def fcode(self):
@@ -49,6 +55,7 @@ class LexicalAnalyzerC:
         'Z',    # Z - sucsess end state - Статус успешного завершения
         'F',    # F - Fail (error) state - Статус ошибки
 
+        'OLC',      # OLC - One-Line Comment state - Статус однострочного комментария
         'MLC',      # MLC - Multi-Line Comment state - Статус многострочного комментария
 
         'MCOP',     # MCOP - Multi-Char OPerators - Статус многосимвольного оператора
@@ -132,14 +139,24 @@ class LexicalAnalyzerC:
     SINGLE_CHAR_OPERATIONS = {k: v for k, v in TABLE_OPERATIONS.items() if len(k) == 1}
     MULTY_CHAR_OPERATIONS = {k: v for k, v in TABLE_OPERATIONS.items() if len(k) > 1}
 
+    IMPLICIT_SEPARATORS = list(set(list(TABLE_SEPARATORS.keys()) + list(map(lambda x: x[0], TABLE_OPERATIONS.keys())) + list(EXCEPT_CHARS)))
+
     def __init__(self, program_filename: str):
         self.program_filename = program_filename
         self._current_state = 'S'
-        self._current_char = ''
-        self._current_linen = 0
-        self._current_сharn = 0
+        self.current_state_verbose = ''
 
-        self.__buffer = CharStack()
+        self._lex_count = 0
+
+        self._start_linen = 0
+        self._current_linen = 0
+        self._current_line = CharQueue()
+
+        self._start_сharn = 0
+        self._current_сharn = 0
+        self._current_char = ''
+
+        self.buffer = CharStack()
         self.__ALL_registry = []
 
         self._analysed_lines = CharQueue()
@@ -147,17 +164,63 @@ class LexicalAnalyzerC:
             for line in f:
                 self._analysed_lines.add(line)
 
-        self._current_line = CharQueue()
-
     @property
     def current_state(self):
         return self._current_state
 
     @current_state.setter
-    def _current_state(self, value):
+    def current_state(self, value):
+        state_verbose = ''
+        if isinstance(value, (tuple, list)):
+            state_verbose = value[1]
+            value = value[0]
+
         if value not in self.STATES:
             raise ValueError('Статус не из списка допустимых')
+
+        self.current_state_verbose = state_verbose
         self._current_state = value
+
+    @property
+    def current_char(self):
+        return self._current_char
+
+    @current_char.setter
+    def current_char(self, value):
+        self._current_char = value
+        self._current_сharn += 1
+
+    def add_buff(self, state=None, item=None, preclean=False):
+        if not item:
+            item = self._current_char
+        if self.buffer.is_empty and item in self.EXCEPT_CHARS:
+            return
+        if preclean:
+            self.clear_buff(state)
+        if state:
+            self.current_state = state
+        if item:
+            self.buffer.add(item)
+
+    def clear_buff(self, state=None):
+        if state:
+            self.current_state = state
+
+        self._start_linen = self._current_linen
+        self._start_сharn = self._current_сharn
+
+        self.buffer.clear()
+
+    def read_buff(self, top=False, bottom=False):
+        if top:
+            return self.buffer.top()
+        if bottom:
+            return self.buffer.bottom()
+        return self.buffer.read()
+
+    @property
+    def is_buff_empty(self):
+        return self.buffer.is_empty
 
     @property
     def ALL_registry(self):
@@ -172,13 +235,44 @@ class LexicalAnalyzerC:
     C_registry = property(lambda s: [x for x in s.ALL_registry if x.class_code == 'C'])
 
     def add_lexem(self, lexem: Lexem):
+        self._lex_count += 1
+
+        if not lexem.text:
+            lexem.text = self.current_char
+
+        if lexem.linen == 0:
+            lexem.linen = self._current_linen
+
+        if lexem.charn == 0:
+            lexem.charn = self._current_сharn
+
+        if lexem.slinen == 0:
+            lexem.slinen = self._start_linen
+
+        if lexem.scharn == 0:
+            lexem.scharn = self._start_сharn
+
+        if lexem.order == -1:
+            lexem.order = self._lex_count
+
+        if lexem.lex_id <= 0 and lexem.text:
+            lex_id = ''
+
+            if lexem.class_code == "W":
+                lex_id = self.TABLE_SPEC_WORDS.get(lexem.text, 0)
+
+            elif lexem.class_code == "O":
+                lex_id = self.TABLE_OPERATIONS.get(lexem.text, 0)
+
+            elif lexem.class_code == "R":
+                lex_id = self.TABLE_SEPARATORS.get(lexem.text, 0)
+
+            lexem.lex_id = lex_id
+
         self.ALL_registry.append(lexem)
 
-    def clear_lexems(self):
-        self.ALL_registry = []
-
     def get_table_rows_cols(self) -> list:
-        th = '''| №       |           Текст лексемы              |   Код Лексемы   |         Описание лексемы         |'''
+        th = '''| №     |             Текст лексемы            |  Код  |       Описание лексемы      |  Строка:Символ |'''
         twidth = len(th)
         thds = th.split('|')
         thds = list(filter(lambda x: x != '', thds))
@@ -187,244 +281,364 @@ class LexicalAnalyzerC:
         text_charbuf = len(thds[1]) - 1
         code_charbuf = len(thds[2]) - 1
         desc_charbuf = len(thds[3]) - 1
+        linechar_charbuf = len(thds[4]) - 1
 
-        def get_row(n='', text='', code='', desc=''):
+        def get_row(n='', text='', code='', desc='', linechar=''):
             n_ = f"{n:>{n_charbuf}} "
+
+            if text.count('-') != text_charbuf:
+                text = text[:(text_charbuf - 5)].replace('\n', '\\n')
+
             text_ = f"{text:>{text_charbuf}} "
             code_ = f"{code:>{code_charbuf}} "
             desc_ = f"{desc:>{desc_charbuf}} "
+            linechar_ = f"{linechar:>{linechar_charbuf}} "
 
-            return '|' + '|'.join([n_, text_, code_, desc_]) + '|'
+            return '|' + '|'.join([n_, text_, code_, desc_, linechar_]) + '|'
 
         ret_list = ['=' * twidth,
                     th,
                     '=' * twidth,
                     ]
         for x in self.ALL_registry:
-            ret_list.append(get_row(x.order, x.text, x.fcode, x.fdesc))
-            ret_list.append(get_row('-' * n_charbuf, '-' * text_charbuf, '-' * code_charbuf, '-' * desc_charbuf))
+            lenes = f'{x.linen}:{x.charn}'
+            if (x.slinen or x.scharn) and not (x.linen == x.slinen and x.charn == x.scharn):
+                lenes = f'{x.slinen}:{x.scharn}' + '-' + lenes
+
+            ret_list.append(get_row(x.order, x.text, x.fcode, x.fdesc, lenes))
+            ret_list.append(get_row('-' * n_charbuf, '-' * text_charbuf, '-' * code_charbuf, '-' * desc_charbuf, '-' * linechar_charbuf))
 
         return ret_list
 
     def __str__(self):
-        return '\n'.join(self.get_table_rows_cols())
 
-    def add_buff(self, item, state=None):
-        if state:
-            self.current_state = state
+        if not self.current_state == 'F':
+            return '\n'.join(self.get_table_rows_cols())
 
-        self.__buffer.add(item)
-
-    def clear_buff(self, state=None):
-        if state:
-            self.current_state = state
-
-        self.__buffer.clear()
-
-    def read_buff(self, top=False, bottom=False):
-        if top:
-            return self.__buffer.top()
-        if bottom:
-            return self.__buffer.bottom()
-
-        self.__buffer.read()
-
-    @property
-    def is_buff_empty(self):
-        return self.__buffer.is_empty
+        return f'Ошибка парсера (строка {self._current_linen}, символ {self._current_сharn}): {self.current_state_verbose}'
 
     def run_analysis(self):
         """
         Начать анализ. Заполнить таблицы лексем.
         """
 
-        while not self._analysed_lines.is_empty() or not self._current_line.is_empty():
+        # Цикл парсинга строк программы
+        while not self._analysed_lines.is_empty or not self._current_line.is_empty:
 
+            # Парсер вернул ошибку
             if self.current_state == 'F':
                 break
+
+            # Парсер чистит буфер за строку если не парсим многострочный комментарий
+            if self.current_state != 'MLC':
+                self.clear_buff()
 
             self._current_line = CharQueue(self._analysed_lines.pop())
             self._current_linen += 1
 
             self._current_сharn = 0
-            self._current_char = self._current_line.pop()
-            self._current_сharn += 1
+            self.current_char = self._current_line.pop()
+            self.add_buff()
 
-            while self._current_char or not self.is_buff_empty:
-                if self.current_state == 'S':
+            # Цикл парсинга символов в строке
+            full_loop_iter = True  # Произошла ли полная итерация
+            ret_or_add_chars_to_buff = False  # Вернуть в буфер считанные дополнительные символы или взять новый символ
+            next_chars = []  # Дополнительные символы считанные из строки но пока не добавленные в буфер
+            while (self.current_char or not self.is_buff_empty) and not self._current_line.is_empty:
 
-                    if self._current_char in self.EXCEPT_CHARS:
-                        pass
+                # Заполним буфер если был continue переход
+                if ret_or_add_chars_to_buff:
+                    if not len(next_chars):  # Берем следующий символ из буфера
+                        self.current_char = self._current_line.pop()
+                        self.add_buff()
+                    else:  # Возвращаем в буфер прочитанные в итерации символы если они есть
+                        for nc in next_chars:
+                            self.current_char = nc
+                            self.add_buff()
 
-                    elif self._current_char == '#':
-                        break
+                elif not full_loop_iter:  # Если оптимизационный continue случился - берем следующий символ в начале петли, иначе он берется в конце петли
+                    self.current_char = self._current_line.pop()
+                    self.add_buff()
 
-                    elif self._current_char == '/':
-                        next_chapter = self.__current_line.pop()
-                        if next_chapter == '*':
-                            # self.__current_status.ID = 'multiline_comment'
-                            # заранее определяемся с возможной ошибкой
-                            self.override_status_and_or_message('multiline_comment', True, 'unterminated comment')
-                        elif next_chapter == '/':
-                            break
-                        else:
-                            # добавить /
-                            self.decide_what_to_do_with_lex('operations', '/')
-                            self.__current_chapter = next_chapter
+                ret_or_add_chars_to_buff = False
+                next_chars = []
+                full_loop_iter = False
+                # / Заполним буфер если был continue переход
+
+                #-----------------------------------------
+                #-----------------------------------------
+                #-----------------------------------------
+
+                #print(self.read_buff())
+                #print("=======")
+
+                # Не анализируем символы
+                if self.current_char in self.EXCEPT_CHARS and self.current_state not in ('LETT', 'IDENT', 'INT', 'REAL', 'MCOP'):
+                    continue
+
+                # Состояние когда окончены предыдущие парсинги лексем
+                elif self.current_state == 'S':
+
+                    # Установка стартовой позиции между успешными лексемами
+                    self._start_linen = self._current_linen
+                    self._start_сharn = self._current_сharn or 1
+
+                    # Инклюд
+                    if self.current_char == '#':
+                        next_chars.extend(x for x in self._current_line if x != '\n')
+                        self._current_сharn += len(next_chars)
+                        self.add_lexem(Lexem('?', text=self.current_char + ''.join(next_chars)))
+                        self.clear_buff('S')
+                        continue  # Однозначаное определение лексемы
+
+                    # Многострочный комментарий, Однострочный комментарий, иное (операция деления)
+                    elif self.current_char == '/':
+
+                        next_chars.append(self._current_line.pop())
+                        self._current_сharn += len(next_chars)
+
+                        if next_chars[-1] == '*':  # Многострочный комментарий
+                            self.add_buff('MLC', next_chars[-1])
                             continue
 
-                    elif self._current_char.isalpha():
-                        self.change_status_and_add_symbol_to_buffer('letters')
+                        elif next_chars[-1] == '/':  # Однострочный комментарий
+                            self.add_buff('OLC', next_chars[-1])
+                            continue
 
-                    elif self._current_char == '_':
-                        self.change_status_and_add_symbol_to_buffer('identifiers')
+                        else:  # Операция деления
+                            self.add_lexem(Lexem('O', text='/'))
+                            self.add_buff('S', next_chars[-1], preclean=True)
+                            continue  # Однозначаное определение лексемы
 
-                    elif self._current_char.isdigit():
-                        self.change_status_and_add_symbol_to_buffer('integer_numbers')
+                    elif self.current_char == "'" or self.current_char == '"':
+                        next_chars.append(self._current_line.pop())
+                        self._current_сharn += len(next_chars)
 
-                    elif self._current_char == '.':
-                        self.change_status_and_add_symbol_to_buffer('real_numbers')
+                        if self.current_char == next_chars[-1]:
+                            self.add_lexem(Lexem('C', text=self.current_char + next_chars[-1]))
+                            self.clear_buff('S')
+                            continue  # Однозначаное определение лексемы
+                        else:
+                            self.add_buff('CHAR', next_chars[-1])
+                            continue
 
-                    elif self._current_char == "'" or self._current_char == '"':
-                        self.__stop_litter_for_character_constants = self.__current_chapter
-                        self.override_status_and_or_message('character_constants',
-                                                            True,
-                                                            'Символьная константа не имеет закрывающей кавычки!')
+                    elif self.current_char in map(lambda x: x[0], self.MULTY_CHAR_OPERATIONS.keys()):
+                        self.current_state = 'MCOP'
+                        continue
 
-                    elif self._current_char in self.MULTY_CHAR_OPERATIONS:
-                        self.change_status_and_add_symbol_to_buffer('two_litters_operations')
+                    elif self.current_char in self.SINGLE_CHAR_OPERATIONS:
+                        self.add_lexem(Lexem('O'))
+                        self.clear_buff('S')
+                        continue  # Однозначаное определение лексемы
 
-                    elif self._current_char in self.SINGLE_CHAR_OPERATIONS:  # ['/', '^', ':', '%']
-                        self.decide_what_to_do_with_lex('operations', self.__current_chapter)
+                    elif self.current_char in self.TABLE_SEPARATORS:
+                        self.add_lexem(Lexem('R'))
+                        self.clear_buff('S')
+                        continue  # Однозначаное определение лексемы
 
-                    elif self._current_char in self.TABLE_SEPARATORS:
-                        self.decide_what_to_do_with_lex('separators', self.__current_chapter)
+                    elif self.current_char.isalpha():
+                        self.current_state = 'LETT'
+                        continue
+
+                    elif self.current_char.isdigit():
+                        self.clear_buff('INT')
+                        self.add_buff()
+                        continue
+
+                    elif self.current_char == '.':
+                        self.clear_buff('REAL')
+                        self.add_buff()
+                        continue
+
+                    elif self.current_char == '_':
+                        self.clear_buff('IDENT')
+                        self.add_buff()
+                        continue
 
                     else:
-                        self.override_status_and_or_message('error', True,
-                                                            f"Символ {repr(self.__current_chapter)} не может быть "
-                                                            f"лексемой в данном контексте ({self.__current_status.ID})")
-                        break
+                        self.current_state = 'F'
+                        break  # Переход на следующую строку и выход
 
+                # Состояние когда идет анализ какойто лексемы
                 else:
 
-                    if self.__current_status.ID == 'multiline_comment':
-                        if self.__current_chapter == '*':
-                            next_chapter = self.__current_line.pop()
-                            if next_chapter == '/':
-                                self.override_status_and_or_message('start')
+                    if self.current_state == 'MLC':
 
-                    elif self.__current_status.ID == 'letters' or self.__current_status.ID == 'identifiers':
-                        if self.__syntax.is_digits(self.__current_chapter) or self.__current_chapter == '_':
-                            self.change_status_and_add_symbol_to_buffer('identifiers')
-                        elif self.__syntax.is_letters(self.__current_chapter):
-                            self.__buffer.add(self.__current_chapter)
-                        elif self.__syntax.is_skip_separators(self.__current_chapter) or \
-                                self.__syntax.is_separators(self.__current_chapter) or \
-                                self.__syntax.is_in_two_litters_operations(self.__current_chapter) or \
-                                self.__syntax.is_only_one_litters_operations(self.__current_chapter):
-                            if self.__current_status.ID == 'letters':
-                                self.decide_what_to_do_with_lex('functional_words')
-                            else:
-                                self.decide_what_to_do_with_lex('identifiers')
+                        if self.current_char == '*':  # Многострочный комментарий, Закрывающая звездочка
+                            next_chars.append(self._current_line.pop())
+                            self._current_сharn += len(next_chars)
+
+                            if next_chars[-1] == '/':  # Многострочный комментарий, Закрывающий слеш
+                                self.add_buff(item=next_chars[-1])
+                                self.add_lexem(Lexem('?', text=self.read_buff()))
+                                self.clear_buff('S')
+                                continue   # Однозначаное определение лексемы
+
+                    if self.current_state == 'OLC':
+
+                        if not self.current_char:  # строчный комментарий
+                            self.add_lexem(Lexem('?', text=self.read_buff()))
+                            self.clear_buff('S')
                             continue
-                        else:
-                            self.override_status_and_or_message('error', True,
-                                                                f"Символ {repr(self.__current_chapter)} не может быть "
-                                                                f"лексемой в данном контексте "
-                                                                f"({self.__current_status.ID})")
-                            break
 
-                    elif self.__current_status.ID == 'integer_numbers' or self.__current_status.ID == 'real_numbers':
-                        if self.__syntax.is_digits(self.__current_chapter):
-                            self.__buffer.add(self.__current_chapter)
-                        elif self.__current_chapter == '.' and self.__current_status.ID == 'integer_numbers':
-                            self.change_status_and_add_symbol_to_buffer('real_numbers')
-                        elif self.__syntax.is_skip_separators(self.__current_chapter) or \
-                                self.__syntax.is_separators(self.__current_chapter) or \
-                                self.__syntax.is_in_two_litters_operations(self.__current_chapter) or \
-                                self.__syntax.is_only_one_litters_operations(self.__current_chapter):
-                            self.decide_what_to_do_with_lex('numeric_constants')
+                    elif self.current_state == 'LETT' or self.current_state == 'IDENT':
+
+                        if self.current_char.isdigit() or self.current_char == '_':
+                            self.current_state = 'IDENT'
                             continue
-                        else:
-                            self.override_status_and_or_message('error', True,
-                                                                f"Символ {repr(self.__current_chapter)} не может быть "
-                                                                f"лексемой в данном контексте "
-                                                                f"({self.__current_status.ID})")
-                            break
 
-                    elif self.__current_status.ID == 'character_constants':
+                        elif self.current_char != ' ' and self.current_char.isalpha():
+                            continue
 
-                        if self.__current_chapter == '\\':
-                            next_chapter = self.__current_line.pop()
-                            if next_chapter == '\n':
-                                break
-                            elif next_chapter == 'n':
-                                self.__buffer.add('\n')
-                            elif next_chapter == 't':
-                                self.__buffer.add('\t')
-                            else:  # любой другой
-                                self.__buffer.add(next_chapter)
-                        elif (self.raw_code.is_empty() and self.__current_line.is_empty() and \
-                              not self.__current_chapter) or self.__current_chapter == '\n':
-                            self.override_status_and_or_message('error', clear_message=False)
-                            self.__buffer.clear()
-                            break
-                        elif self.__current_chapter == self.__stop_litter_for_character_constants:
-                            if self.__stop_litter_for_character_constants == '"':
-                                self.decide_what_to_do_with_lex('character_constants')
-                            else:  # "'"
-                                item = self.__buffer.show_all_as_str()
-                                if len(item) <= 1:
-                                    self.decide_what_to_do_with_lex('character_constants', item)
+                        elif self.current_char in self.IMPLICIT_SEPARATORS:
+
+                            stripchars = ''.join(self.IMPLICIT_SEPARATORS)
+                            scharn = self._start_сharn
+                            buff = self.read_buff()
+                            bunocu = buff.lstrip(stripchars)
+                            bunocu_ = bunocu.rstrip(stripchars)
+                            charn = scharn + len(bunocu_) - 1
+                            bunocu = bunocu_
+
+                            if self.current_state == 'LETT':
+                                if bunocu in self.TABLE_SPEC_WORDS:
+                                    self.add_lexem(Lexem('W', text=bunocu, charn=charn, scharn=scharn))
+                                    self.add_buff('S', self.current_char, preclean=True)
+                                    full_loop_iter = True
+                                    continue  # Однозначаное определение лексемы
+
                                 else:
-                                    self.decide_what_to_do_with_lex('character_constants', item[-1:])
-                                    print('warning: character constant too long for its type')
+                                    self.add_lexem(Lexem('I', text=bunocu, charn=charn, scharn=scharn))
+                                    self.add_buff('S', self.current_char, preclean=True)
+                                    full_loop_iter = True
+                                    continue  # Однозначаное определение лексемы
+
+                            self.add_buff('S', self.current_char, preclean=True)
+                            full_loop_iter = True
+                            continue
+
+                    elif self.current_state == 'INT' or self.current_state == 'REAL':
+
+                        if self.current_char.isdigit():
+                            continue
+
+                        elif self.current_char == '.' and self.current_state == 'INT':
+                            self.current_state = 'REAL'
+                            continue
+
+                        elif self.current_char in self.IMPLICIT_SEPARATORS:
+
+                            stripchars = ''.join(self.IMPLICIT_SEPARATORS)
+                            scharn = self._start_сharn
+                            buff = self.read_buff()
+                            bunocu = buff.lstrip(stripchars)
+                            bunocu_ = bunocu.rstrip(stripchars)
+                            charn = scharn + len(bunocu_) - 1
+                            bunocu = bunocu_
+
+                            self.add_lexem(Lexem('N', text=bunocu, charn=charn, scharn=scharn))
+                            self.add_buff('S', self.current_char, preclean=True)
+                            full_loop_iter = True
+                            continue  # Однозначаное определение лексемы
+
                         else:
-                            self.__buffer.add(self.__current_chapter)
+                            self.clear_buff(('F', f"Символ {self.current_char} не может быть "
+                                                  f"лексемой в данном контексте "
+                                                  f"({self.current_state})"))
+                            break  # Переход на следующую строку и выход
 
-                    elif self.__current_status.ID == 'two_litters_operations':
-                        join_buffer = self.__buffer.items[0] + self.__current_chapter
-                        if self.decide_what_to_do_with_lex('operations', join_buffer) == \
-                                'is_not_two_litters_operations':
-                            if self.__buffer.items[0] in self.__syntax.const_tables_of_lex['operations']:  # |
-                                self.decide_what_to_do_with_lex('operations')
-                                continue
-                            else:  # не это однолитерная операция
-                                self.override_status_and_or_message('error', True,
-                                                                    f"{repr(self.__buffer.items[0])} или "
-                                                                    f"{repr(join_buffer)} не является оператором!")
-                                break
+                    elif self.current_state == 'CHAR':
+                        buff = self.read_buff()
+                        firstchar = buff.lstrip()[0]
 
-                self.__current_chapter = self.__current_line.pop()
+                        if self.current_char == '\\':
+                            next_chars.append(self._current_line.pop())
+                            self._current_сharn += len(next_chars)
+
+                            if next_chars[-1] == '\n':
+                                self.clear_buff('S')
+                                break  # Переход на следующую строку
+
+                            ret_or_add_chars_to_buff = True
+                            continue
+
+                        elif (self._analysed_lines.is_empty and self._current_line.is_empty and \
+                              not self.current_char) or self.current_char == '\n':
+                            self.clear_buff(('F', f"Обрыв строки посередине строковой константы: {self.read_buff()}"))
+                            break  # Переход на следующую строку и выход
+
+                        elif self.current_char == firstchar:
+                            self.add_lexem(Lexem('C', text=self.read_buff()))
+                            self.clear_buff('S')
+                            continue  # Однозначаное определение лексемы
+
+                    elif self.current_state == 'MCOP':
+
+                        if self.current_char == ' ' or self.current_char in self.IMPLICIT_SEPARATORS:
+
+                            stripchars = ' ' + ''.join(self.TABLE_SEPARATORS.keys()) + ''.join(self.EXCEPT_CHARS)
+                            scharn = self._start_сharn
+                            buff = self.read_buff()
+                            full_op = buff.lstrip(stripchars)
+                            bunocu_ = full_op.rstrip(stripchars)
+                            charn = scharn + len(bunocu_) - 1
+
+                            full_op = bunocu_
+                            oneop = full_op[0]
+
+                            if full_op in self.MULTY_CHAR_OPERATIONS:
+                                self.add_lexem(Lexem('O', text=full_op, scharn=scharn, charn=charn))
+                                self.clear_buff('S')
+                                continue  # Однозначаное определение лексемы
+
+                            elif oneop in self.SINGLE_CHAR_OPERATIONS and self.current_char not in self.SINGLE_CHAR_OPERATIONS:
+                                self.add_lexem(Lexem('O', text=oneop, charn=scharn, scharn=scharn))
+                                self.add_buff('S', self.current_char, preclean=True)
+                                full_loop_iter = True
+                                continue  # Однозначаное определение лексемы
+
+                            else:  # Не многолитерная не однолитерная
+                                self.clear_buff(('F', f"оператор {full_op} не является оператором!"))
+                                break  # Переход на следующую строку
+
+                        else:  # Не многолитерная не однолитерная
+                            self.clear_buff(('F', f"{self.read_buff()} не является оператором!"))
+                            break  # Переход на следующую строку
+
+                    pass
+
+                #-----------------------------------------
+                #-----------------------------------------
+                #-----------------------------------------
+
+                # Заполним буфер поумолчанию
+                if ret_or_add_chars_to_buff:
+                    if not len(next_chars):  # Берем следующий символ из буфера
+                        self.current_char = self._current_line.pop()
+                        self.add_buff()
+                    else:  # Возвращаем в буфер прочитанные в итерации символы если они есть
+                        for nc in next_chars:
+                            self.current_char = nc
+                            self.add_buff()
+                else:  # Берем следующий символ из буфера
+                    self.current_char = self._current_line.pop()
+                    self.add_buff()
+
+                ret_or_add_chars_to_buff = False
+                next_chars = []
+                # / Заполним буфер поумолчанию
+
+                full_loop_iter = True
 
         pass
 
 
 if __name__ == "__main__":
 
-    anal = LexicalAnalyzerC(r'M:\home\git\\magistry2022\study.teor_pl\src\test_gtk_artem\lab_1\data\input_code.c')
+    anal = LexicalAnalyzerC(r'input_code.c')
 
-    sss = CharStack([1, 2, 3])
+    anal.run_analysis()
 
-    sss.add(10)
-    sss.add(20)
-    sss.add(30)
-    sss.add(40)
-
-    for elem in sss:
-        print(elem)
-
-    print("====")
-
-    qqq = CharQueue([1, 2, 3])
-
-    qqq.add(100)
-    qqq.add(200)
-    qqq.add(300)
-    qqq.add(400)
-
-    for elem in qqq:
-        print(elem)
+    print(anal)
 
     pass
