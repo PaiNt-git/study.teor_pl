@@ -194,6 +194,16 @@ class LexicalAnalyzerC:
         self.TABLE_CHAR_CONSTANTS = {}
         self.TABLE_NUM_CONSTANTS = {}
 
+    def get_reg_lexem_by_order(self, order: int):
+        if len(self.ALL_registry):
+            lx = self.ALL_registry[order - 1]
+            if lx.order != order:
+                for lx in self.ALL_registry:
+                    if lx.order == order:
+                        return lx
+            return lx
+        return None
+
     @property
     def current_state(self):
         return self._current_state
