@@ -4,8 +4,9 @@ Created on 15 сент. 2022 г.
 @author: ASZabavin
 '''
 
-from shared_classes import CharStack, CharQueue
 import time
+
+from shared_classes import CharStack, CharQueue
 
 
 class Lexem:
@@ -142,6 +143,16 @@ class LexicalAnalyzerC:
     MULTY_CHAR_OPERATIONS = {k: v for k, v in TABLE_OPERATIONS.items() if len(k) > 1}
 
     IMPLICIT_SEPARATORS = list(set(list(TABLE_SEPARATORS.keys()) + list(map(lambda x: x[0], TABLE_OPERATIONS.keys())) + list(EXCEPT_CHARS)))
+
+    @staticmethod
+    def is_left_op(optext):
+
+        return False
+
+    @staticmethod
+    def is_right_op(optext):
+
+        return False
 
     @property
     def TABLE_IDENTIFICATORS(self):

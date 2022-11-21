@@ -5,10 +5,10 @@ Created on 2 окт. 2022 г.
 '''
 
 
-class _CharStackQueue:
+class _StackQueue:
 
     def __new__(cls, *args, **kwargs):
-        if cls is _CharStackQueue:
+        if cls is _StackQueue:
             raise TypeError('От этого класса нельзя наследоваться напрямую, используйте субклассы')
         return super().__new__(cls)
 
@@ -17,7 +17,7 @@ class _CharStackQueue:
 
         if initlist is not None:
             for x in initlist:
-                self.add(str(x))
+                self.add(x)
 
     @property
     def is_empty(self):
@@ -27,7 +27,7 @@ class _CharStackQueue:
 
     def pop(self):
         if self.is_empty:
-            return ''
+            return None
         else:
             return self._items.pop()
 
@@ -41,10 +41,10 @@ class _CharStackQueue:
     len = property(lambda s: len(s))
 
     def __str__(self):
-        return self.show_all_as_str()
+        return self.read()
 
 
-class CharStack(_CharStackQueue):
+class CharStack(_StackQueue):
     is_stack = True
 
     def top(self):
@@ -72,12 +72,12 @@ class CharStack(_CharStackQueue):
 
     def __next__(self):
         x = self.pop()
-        if x != '':
+        if x and x != '':
             return x
         raise StopIteration
 
 
-class CharQueue(_CharStackQueue):
+class CharQueue(_StackQueue):
     is_stack = False
 
     def first(self):
@@ -105,6 +105,72 @@ class CharQueue(_CharStackQueue):
 
     def __next__(self):
         x = self.pop()
-        if x != '':
+        if x and x != '':
+            return x
+        raise StopIteration
+
+
+class VarStack(_StackQueue):
+    is_stack = True
+
+    def top(self):
+        try:
+            return self._items[-1]
+        except:
+            pass
+        return None
+
+    def bottom(self):
+        try:
+            return self._items[0]
+        except:
+            pass
+        return None
+
+    def add(self, value):
+        self._items.append(value)
+
+    def read(self):
+        return ''.join(map(repr, self._items))
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        x = self.pop()
+        if x is not None:
+            return x
+        raise StopIteration
+
+
+class VarQueue(_StackQueue):
+    is_stack = False
+
+    def first(self):
+        try:
+            return self._items[-1]
+        except:
+            pass
+        return None
+
+    def last(self):
+        try:
+            return self._items[0]
+        except:
+            pass
+        return None
+
+    def add(self, value):
+        self._items.insert(0, value)
+
+    def read(self):
+        return ''.join(map(repr, self._items))
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        x = self.pop()
+        if x is not None:
             return x
         raise StopIteration
