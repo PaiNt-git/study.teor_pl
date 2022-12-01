@@ -146,11 +146,36 @@ class LexicalAnalyzerC:
 
     @staticmethod
     def is_left_op(optext):
+        """
+        Левосторонний оператор
+
+        https://ru.wikipedia.org/wiki/Операторы_в_C_и_C++
+
+        :param optext:
+        """
+
+        if optext in ('++', '--', '()', '[]', '.', '->', '.*', '->*', '*', '/', '%', '+',
+                      '-', '<<', '>>', '<', '<=', '>',
+                      '>=', '==', '!=', '&', '^', '|', '&&', '||', ',', ):
+            return True
 
         return False
 
     @staticmethod
     def is_right_op(optext):
+        """
+        Правосторонний оператор
+
+        https://ru.wikipedia.org/wiki/Операторы_в_C_и_C++
+
+        :param optext:
+        """
+
+        if optext in ('~~~++', '~~~--', '+', '-', '!', '~', '(type)', '*',
+                      '&', 'sizeof', 'new', 'new[]', 'delete', 'delete[]',
+                      '?:', '=', '+=', '-=', '*=', '/=',
+                      '%=', '<<=', '>>=', '&=', '|=', '^=', 'throw', ):
+            return True
 
         return False
 
