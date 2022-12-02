@@ -108,8 +108,7 @@ class LexicalAnalyzerC:
         '{': 5,
         '}': 6,
         ',': 7,
-        '.': 8,
-
+        # '.': 8,
     }
 
     TABLE_OPERATIONS = {
@@ -137,6 +136,8 @@ class LexicalAnalyzerC:
         '>>': 20,
         ':': 21,
         '=': 22,
+        '::': 23,
+        '.': 24,
 
     }
     SINGLE_CHAR_OPERATIONS = {k: v for k, v in TABLE_OPERATIONS.items() if len(k) == 1}
