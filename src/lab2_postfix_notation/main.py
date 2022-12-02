@@ -43,109 +43,109 @@ class DijkstratorC():
 
 #===============================================================================
 #         if tcstate:
-#             return 14
+#             return 3
 #
 #         elif lex_text in ('::'):
-#             return 16
+#             return 1
 #
 #         elif lex_text in ('++', '--', '(', ')', '[', ']', '.', '->', ):
-#             return 15
+#             return 2
 #
 #         elif lex_text in ('++~~~', '--~~~', '+', '-', '!', '~', '*', '&', 'new', 'new[]', 'delete ', 'delete[]',):
-#             return 14
+#             return 3
 #
 #         elif lex_text in ('.*', '->*'):
-#             return 13
-#
-#         elif lex_text in ('*', '/', '%',):
-#             return 12
-#
-#         elif lex_text in ('+', '-',):
-#             return 11
-#
-#         elif lex_text in ('<<', '>>', ):
-#             return 10
-#
-#         elif lex_text in ('<', '<=', '>', '>=', ):
-#             return 9
-#
-#         elif lex_text in ('==', '!=',):
-#             return 8
-#
-#         elif lex_text in ('&', ):
-#             return 7
-#
-#         elif lex_text in ('^', ):
-#             return 6
-#
-#         elif lex_text in ('|', ):
-#             return 5
-#
-#         elif lex_text in ('&&', ):
 #             return 4
 #
+#         elif lex_text in ('*', '/', '%',):
+#             return 5
+#
+#         elif lex_text in ('+', '-',):
+#             return 6
+#
+#         elif lex_text in ('<<', '>>', ):
+#             return 7
+#
+#         elif lex_text in ('<', '<=', '>', '>=', ):
+#             return 8
+#
+#         elif lex_text in ('==', '!=',):
+#             return 9
+#
+#         elif lex_text in ('&', ):
+#             return 10
+#
+#         elif lex_text in ('^', ):
+#             return 11
+#
+#         elif lex_text in ('|', ):
+#             return 12
+#
+#         elif lex_text in ('&&', ):
+#             return 13
+#
 #         elif lex_text in ('||', ):
-#             return 3
+#             return 14
 #
 #         elif lex_text in ('?:', '=', '+=', '-=', '*=', '/=',
 #                           '%=', '<<=', '>>=', '&=', '|=', '^=', 'throw',):
-#             return 2
+#             return 15
 #
 #         elif lex_text in (','):
-#             return 1
+#             return 16
 #===============================================================================
 
         if tcstate:
-            return 3
+            return 14
 
         elif lex_text in ('::'):
-            return 1
+            return 16
 
         elif lex_text in ('++', '--', '(', ')', '[', ']', '.', '->', ):
-            return 2
+            return 15
 
         elif lex_text in ('++~~~', '--~~~', '+', '-', '!', '~', '*', '&', 'new', 'new[]', 'delete ', 'delete[]',):
-            return 3
+            return 14
 
         elif lex_text in ('.*', '->*'):
-            return 4
-
-        elif lex_text in ('*', '/', '%',):
-            return 5
-
-        elif lex_text in ('+', '-',):
-            return 6
-
-        elif lex_text in ('<<', '>>', ):
-            return 7
-
-        elif lex_text in ('<', '<=', '>', '>=', ):
-            return 8
-
-        elif lex_text in ('==', '!=',):
-            return 9
-
-        elif lex_text in ('&', ):
-            return 10
-
-        elif lex_text in ('^', ):
-            return 11
-
-        elif lex_text in ('|', ):
-            return 12
-
-        elif lex_text in ('&&', ):
             return 13
 
+        elif lex_text in ('*', '/', '%',):
+            return 12
+
+        elif lex_text in ('+', '-',):
+            return 11
+
+        elif lex_text in ('<<', '>>', ):
+            return 10
+
+        elif lex_text in ('<', '<=', '>', '>=', ):
+            return 9
+
+        elif lex_text in ('==', '!=',):
+            return 8
+
+        elif lex_text in ('&', ):
+            return 7
+
+        elif lex_text in ('^', ):
+            return 6
+
+        elif lex_text in ('|', ):
+            return 5
+
+        elif lex_text in ('&&', ):
+            return 4
+
         elif lex_text in ('||', ):
-            return 14
+            return 3
 
         elif lex_text in ('?:', '=', '+=', '-=', '*=', '/=',
                           '%=', '<<=', '>>=', '&=', '|=', '^=', 'throw',):
-            return 15
+            return 2
 
         elif lex_text in (','):
-            return 16
+            return 1
 
         return 0
 
@@ -274,6 +274,10 @@ class DijkstratorC():
                     is_left_op_ = self.la_instance.is_left_op(cl.text)
                     is_right_op_ = self.la_instance.is_right_op(cl.text)
 
+                # Если Служебное слово - то считаем по-умолчанию ее правосторонней операцией как префиксные инкременты
+                if not is_left_op_ and cl.class_code == 'W' and nextlex.class_code in ('I', 'N', 'C'):
+                    is_right_op_ = True
+
                 #===============================================================================
                 # 1) пока приоритет θ меньше либо равен приоритету операции,
                 # находящейся на вершине стека (для лево-ассоциативных
@@ -283,19 +287,21 @@ class DijkstratorC():
                 # стека в ПОЛИЗ-массив;
                 # 2) помещаем операцию θ в стек.
                 #===============================================================================
-                if is_left_op_:
+                if is_left_op_ and self.stack_top():
                     while op_priority <= self.get_priority_by_reg_lex_order(self.stack_top().order):  # op_priority <= self.get_priority_by_reg_lex_order(self.stack_top().order)
                         cl_ = self.stack_pop_and_state()
                         self.output_and_state(cl_)
 
-                    self.stack_add_and_state(cl)
+                    if cl.class_code != 'W' or self.stack_top().class_code in ('W', 'O', 'I', 'N', 'C'):
+                        self.stack_add_and_state(cl)
 
-                elif is_right_op_:
+                elif is_right_op_ and self.stack_top():
                     while op_priority < self.get_priority_by_reg_lex_order(self.stack_top().order):  # op_priority < self.get_priority_by_reg_lex_order(self.stack_top().order)
                         cl_ = self.stack_pop_and_state()
                         self.output_and_state(cl_)
 
-                    self.stack_add_and_state(cl)
+                    if cl.class_code != 'W' or self.stack_top().class_code in ('W', 'O', 'I', 'N', 'C'):
+                        self.stack_add_and_state(cl)
 
                 tc, _, cs = self.cur_op_state.rpartition(':')
 
@@ -375,8 +381,12 @@ if __name__ == "__main__":
 
     opz.run_postfix_notatization()
 
-    for lexem in opz.la_instance.ALL_registry:
-        print((lexem.order, str(lexem)))
+    with open(opz.la_instance.program_filename, 'rt', encoding='utf-8') as f:
+        print(f.read())
+
+    print(opz.la_instance)
+
+    print('\nОбратная польская нотация\n')
 
     print(opz)
 
