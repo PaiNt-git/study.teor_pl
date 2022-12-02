@@ -10,6 +10,7 @@ from itertools import groupby
 from shared_classes import VarStack, VarQueue
 
 from lab1_lexical_analysis.main import LexicalAnalyzerC
+import time
 
 
 class DijkstratorC():
@@ -171,12 +172,16 @@ class DijkstratorC():
         self._postfix_stack = VarStack()
         self._output_list = []
         self._cur_op_state = 'S'
+        self.current_state_verbose = ''
         pass
 
     STATES = [
         'S',
         'BLOCK_BODY',  # { BLOCK_BODY }
         'FUNC_BODY',  # ( FUNC_BODY )
+        'TYPE_CAST:S',
+        'TYPE_CAST:BLOCK_BODY',
+        'TYPE_CAST:FUNC_BODY',
     ]
 
     def stack_top(self):
@@ -203,9 +208,20 @@ class DijkstratorC():
 
     @cur_op_state.setter
     def cur_op_state(self, value):
+
+        state_verbose = ''
+        if isinstance(value, (tuple, list)):
+            state_verbose = value[1]
+            value = value[0]
+
+        if value not in self.STATES:
+            raise ValueError('Статус не из списка допустимых')
+
+        self.current_state_verbose = state_verbose
         self._cur_op_state = value
 
     def run_postfix_notatization(self):
+        self._time_start = time.time()
 
         while not self._lexem_queue.is_empty:
             cl = self._lexem_queue.pop()
@@ -223,10 +239,12 @@ class DijkstratorC():
                 if not nextlex or nextlex.text != '(':
                     self.output_and_state(cl)
 
+                # Если
                 elif nextlex and nextlex.text == '(':
                     next_lex1 = self.la_instance.get_reg_lexem_by_order(nexto + 1)
                     next_lex12 = self.la_instance.get_reg_lexem_by_order(nexto + 2)
-                    # Если две следующие лексемы образуют "приеведение типа" ,то ставим статус 'TYPE_CAST'
+
+                    # Если две следующие лексемы образуют "приеведение типа", то ставим статус 'TYPE_CAST'
                     if next_lex1 and next_lex12 and next_lex1.class_code == 'W' and next_lex12.text == ')':
                         self.output_and_state(cl, 'TYPE_CAST:' + self.cur_op_state.replace('TYPE_CAST:', ''))
 
@@ -270,11 +288,12 @@ class DijkstratorC():
                     is_left_op_ = self.la_instance.is_left_op(cl.text + '~~~')
                     is_right_op_ = self.la_instance.is_right_op(cl.text + '~~~')
 
+                # Определяем левостороннесть и правостороннесть по стандартным методам
                 else:
                     is_left_op_ = self.la_instance.is_left_op(cl.text)
                     is_right_op_ = self.la_instance.is_right_op(cl.text)
 
-                # Если Служебное слово - то считаем по-умолчанию ее правосторонней операцией как префиксные инкременты
+                # Если Служебное слово (с идущеми вслед числами, строками и переменными) - то считаем по-умолчанию ее правосторонней операцией как префиксные инкременты
                 if not is_left_op_ and cl.class_code == 'W' and nextlex.class_code in ('I', 'N', 'C'):
                     is_right_op_ = True
 
@@ -369,10 +388,13 @@ class DijkstratorC():
 
             pass
 
+        self._time_end = time.time()
+        self.cur_op_state = ('S', f'Приведение к обратной польской записи завершено. Время выполнения: {self._time_end - self._time_start} с.')
+
         pass
 
     def __str__(self):
-        return ' '.join([x.text for x in self._output_list])
+        return ' '.join([x.text for x in self._output_list]) + '\n\n' + self.current_state_verbose
 
 
 if __name__ == "__main__":

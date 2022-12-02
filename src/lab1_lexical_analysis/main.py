@@ -762,6 +762,9 @@ if __name__ == "__main__":
 
     anali.run_analysis()
 
+    with open(anali.program_filename, 'rt', encoding='utf-8') as f:
+        print(f.read())
+
     print(anali)
 
     pass
