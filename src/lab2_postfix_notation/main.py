@@ -51,7 +51,7 @@ class DijkstratorC():
 #         elif lex_text in ('++', '--', '(', ')', '[', ']', '.', '->', ):
 #             return 15
 #
-#         elif lex_text in ('~~~++', '~~~--', '+', '-', '!', '~', '*', '&', 'new', 'new[]', 'delete ', 'delete[]',):
+#         elif lex_text in ('++~~~', '--~~~', '+', '-', '!', '~', '*', '&', 'new', 'new[]', 'delete ', 'delete[]',):
 #             return 14
 #
 #         elif lex_text in ('.*', '->*'):
@@ -104,7 +104,7 @@ class DijkstratorC():
         elif lex_text in ('++', '--', '(', ')', '[', ']', '.', '->', ):
             return 2
 
-        elif lex_text in ('~~~++', '~~~--', '+', '-', '!', '~', '*', '&', 'new', 'new[]', 'delete ', 'delete[]',):
+        elif lex_text in ('++~~~', '--~~~', '+', '-', '!', '~', '*', '&', 'new', 'new[]', 'delete ', 'delete[]',):
             return 3
 
         elif lex_text in ('.*', '->*'):
@@ -156,7 +156,7 @@ class DijkstratorC():
 
         # Если это префиксный декермент инкремент
         if nextlex.class_code in ('I', 'N') and lx.text in ('--', '++'):
-            return self.get_priority_by_lexemid(lx.class_code, lx.lex_id, '~~~' + lx.text)
+            return self.get_priority_by_lexemid(lx.class_code, lx.lex_id, lx.text + '~~~')
 
         return self.get_priority_by_lexemid(lx.class_code, lx.lex_id, lx.text)
 
@@ -267,8 +267,8 @@ class DijkstratorC():
 
                 # Если это префиксный декермент инкремент
                 elif nextlex.class_code in ('I', 'N') and cl.text in ('--', '++'):
-                    is_left_op_ = self.la_instance.is_left_op('~~~' + cl.text)
-                    is_right_op_ = self.la_instance.is_right_op('~~~' + cl.text)
+                    is_left_op_ = self.la_instance.is_left_op(cl.text + '~~~')
+                    is_right_op_ = self.la_instance.is_right_op(cl.text + '~~~')
 
                 else:
                     is_left_op_ = self.la_instance.is_left_op(cl.text)
@@ -285,13 +285,17 @@ class DijkstratorC():
                 #===============================================================================
                 if is_left_op_:
                     while op_priority <= self.get_priority_by_reg_lex_order(self.stack_top().order):  # op_priority <= self.get_priority_by_reg_lex_order(self.stack_top().order)
-                        cl = self.stack_pop_and_state()
-                        self.output_and_state(cl)
+                        cl_ = self.stack_pop_and_state()
+                        self.output_and_state(cl_)
+
+                    self.stack_add_and_state(cl)
 
                 elif is_right_op_:
                     while op_priority < self.get_priority_by_reg_lex_order(self.stack_top().order):  # op_priority < self.get_priority_by_reg_lex_order(self.stack_top().order)
-                        cl = self.stack_pop_and_state()
-                        self.output_and_state(cl)
+                        cl_ = self.stack_pop_and_state()
+                        self.output_and_state(cl_)
+
+                    self.stack_add_and_state(cl)
 
                 tc, _, cs = self.cur_op_state.rpartition(':')
 

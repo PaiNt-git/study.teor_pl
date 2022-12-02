@@ -626,6 +626,12 @@ class LexicalAnalyzerC:
                                     full_loop_iter = True
                                     continue  # Однозначаное определение лексемы
 
+                            elif self.current_state == 'IDENT':
+                                self.add_lexem(Lexem('I', text=bunocu, charn=charn, scharn=scharn))
+                                self.add_buff('S', self.current_char, preclean=True)
+                                full_loop_iter = True
+                                continue  # Однозначаное определение лексемы
+
                             self.add_buff('S', self.current_char, preclean=True)
                             full_loop_iter = True
                             continue
