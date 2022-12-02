@@ -2,11 +2,9 @@
 using namespace std;
 
 int main() {
-	double num1, num2, product;
+	double num1;
 
-	cin >> num1 >> num2;
-
-	product = num1 * num2;
+	a = 5.0 * num1;
 
 	return 0;
 }
